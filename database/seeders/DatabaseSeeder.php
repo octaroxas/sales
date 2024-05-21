@@ -16,7 +16,8 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         if(app()->isProduction()){
-            $this->call(ProductionSeed::class);
+            //$this->call(ProductionSeed::class);
+            $this->call(LocalSeed::class);
         } else {
             $this->call(LocalSeed::class);
         }

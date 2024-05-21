@@ -3,36 +3,48 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Company;
+use App\Http\Resources\CompanyResource;
 
 class CompanyController extends Controller
 {
     public function index()
     {
-        // Lógica para retornar todos os registros
+        $companies = Company::all();
+        return CompanyResource::collection($companies);
     }
 
     public function show($id)
     {
-        // Lógica para mostrar um registro específico
-    }
-
-    public function edit($id)
-    {
-        // Lógica para exibir o formulário de edição de um registro
+        $company = Company::findOrFail($id);
+        return new CompanyResource($company);
     }
 
     public function store(Request $request)
     {
-        // Lógica para armazenar um novo registro
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $company = Company::create($request->all());
+        return new CompanyResource($company);
     }
 
     public function update(Request $request, $id)
     {
-        // Lógica para atualizar um registro existente
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $company = Company::findOrFail($id);
+        $company->update($request->all());
+        return new CompanyResource($company);
     }
 
     public function destroy($id)
     {
-        // Lógica para excluir um registro
+        $company = Company::findOrFail($id);
+        $company->delete();
+        return response()->json(null, 204);
     }
 }

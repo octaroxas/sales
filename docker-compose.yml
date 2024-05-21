@@ -1,0 +1,58 @@
+version: "3.9"
+
+services:
+    app:
+        build:
+            args:
+                user: ${USER}
+                uid: 1000
+            context: ./
+            dockerfile: ./docker-compose/app/Dockerfile
+        image: sales
+        container_name: sales-app
+        restart: unless-stopped
+        working_dir: /var/www/
+        volumes:
+            - ./:/var/www
+            - ./docker-compose/app/php.ini:/usr/local/etc/php/php.ini
+        environment:
+            - TZ=America/Santarem
+        networks:
+            sales:
+                ipv4_address: 172.20.0.4
+    db:
+        image: postgres:13-alpine
+        ports:
+            - "5069:5432"
+        container_name: sales-db
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: ${DB_DATABASE}
+            POSTGRES_USER: ${DB_USERNAME}
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+        volumes:
+            - /home/data/sales:/var/lib/postgresql/data
+        networks:
+            sales:
+                ipv4_address: 172.20.0.2
+    nginx:
+        image: nginx:alpine
+        container_name: sales-nginx
+        restart: unless-stopped
+        ports:
+            - "8069:80"
+        volumes:
+            - ./:/var/www
+            - ./docker-compose/nginx:/etc/nginx/conf.d/
+        environment:
+            - TZ=America/Santarem
+        networks:
+            sales:
+                ipv4_address: 172.20.0.3
+
+networks:
+    sales:
+        driver: bridge
+        ipam:
+            config:
+                - subnet: 172.20.0.0/24

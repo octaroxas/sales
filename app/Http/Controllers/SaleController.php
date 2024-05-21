@@ -10,7 +10,7 @@ class SaleController extends Controller
 {
     public function index()
     {
-        $sales = Sale::all();
+        $sales = Sale::paginate(20);
         return SaleResource::collection($sales);
     }
 

@@ -13,7 +13,7 @@ class ClientController extends Controller
     // Função para listar todos os clientes
     public function index()
     {
-        $clients = Client::all();
+        $clients = Client::paginate(20);
         return ClientResource::collection($clients);
     }
 

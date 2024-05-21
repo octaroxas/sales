@@ -11,7 +11,7 @@ class EmployeeController extends Controller
 {
     public function index()
     {
-        $employees = Employee::all();
+        $employees = Employee::paginate(20);
         return EmployeeResource::collection($employees);
     }
 

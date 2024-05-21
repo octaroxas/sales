@@ -10,7 +10,7 @@ class CompanyController extends Controller
 {
     public function index()
     {
-        $companies = Company::all();
+        $companies = Company::paginate(20);
         return CompanyResource::collection($companies);
     }
 

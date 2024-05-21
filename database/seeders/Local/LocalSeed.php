@@ -12,7 +12,11 @@ class LocalSeed extends Seeder
      */
     public function run(): void
     {
+        $this->call(LocalCompanySeed::class);
+        $this->call(LocalProductSeed::class);
         $this->call(LocalUserSeed::class);
-        
+        $this->call(LocalEmployeeSeed::class);
+        $this->call(LocalClientSeed::class);
+        $this->call(LocalSaleSeed::class);
     }
 }

@@ -2,65 +2,81 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
+    // Função para listar todos os usuários
     public function index()
     {
-        return User::all();
+        $users = User::all();
+        return UserResource::collection($users);
     }
 
+    // Função para exibir um usuário específico
+    public function show($id)
+    {
+        $user = User::findOrFail($id);
+        return new UserResource($user);
+    }
+
+    // Função para criar um novo usuário
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => bcrypt($request->password),
         ]);
 
-        return response()->json($user, 201);
+        return new UserResource($user);
     }
 
-    public function show(User $user)
+    // Função para atualizar um usuário
+    public function update(Request $request, $id)
     {
-        return $user;
-    }
+        $user = User::findOrFail($id);
 
-    public function update(Request $request, User $user)
-    {
-        $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $user->id,
-            'password' => 'sometimes|required|string|min:8',
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:8',
         ]);
 
-        if ($request->has('name')) {
-            $user->name = $request->name;
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
         }
-        if ($request->has('email')) {
-            $user->email = $request->email;
-        }
+
+        $user->name = $request->name;
+        $user->email = $request->email;
         if ($request->has('password')) {
-            $user->password = Hash::make($request->password);
+            $user->password = bcrypt($request->password);
         }
-
         $user->save();
 
-        return response()->json($user, 200);
+        return new UserResource($user);
     }
 
-    public function destroy(User $user)
+    // Função para excluir um usuário
+    public function destroy($id)
     {
+        $user = User::findOrFail($id);
         $user->delete();
+
         return response()->json(null, 204);
     }
 }

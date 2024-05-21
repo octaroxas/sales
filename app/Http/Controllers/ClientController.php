@@ -3,36 +3,69 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Client;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\ClientResource;
+use Illuminate\Support\Facades\Validator;
 
 class ClientController extends Controller
 {
+    // Função para listar todos os clientes
     public function index()
     {
-        // Lógica para retornar todos os registros
+        $clients = Client::all();
+        return ClientResource::collection($clients);
     }
 
+    // Função para exibir um cliente específico
     public function show($id)
     {
-        // Lógica para mostrar um registro específico
+        $client = Client::findOrFail($id);
+        return new ClientResource($client);
     }
 
-    public function edit($id)
-    {
-        // Lógica para exibir o formulário de edição de um registro
-    }
-
+    // Função para criar um novo cliente
     public function store(Request $request)
     {
-        // Lógica para armazenar um novo registro
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string',
+            'email' => 'required|email|unique:clients,email',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        $client = Client::create($request->all());
+
+        return new ClientResource($client);
     }
 
+    // Função para atualizar um cliente
     public function update(Request $request, $id)
     {
-        // Lógica para atualizar um registro existente
+        $client = Client::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string',
+            'email' => 'required|email|unique:clients,email,' . $client->id,
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        $client->update($request->all());
+
+        return new ClientResource($client);
     }
 
+    // Função para excluir um cliente
     public function destroy($id)
     {
-        // Lógica para excluir um registro
+        $client = Client::findOrFail($id);
+        $client->delete();
+
+        return response()->json(null, 204);
     }
 }

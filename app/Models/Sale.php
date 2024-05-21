@@ -9,7 +9,7 @@ class Sale extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['product_id', 'client_id', 'quantity', 'total_price'];
+    protected $fillable = ['product_id', 'client_id', 'quantity', 'total_price','employee_id'];
 
     public function product()
     {
@@ -19,5 +19,10 @@ class Sale extends Model
     public function client()
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
     }
 }
